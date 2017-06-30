@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import Moment from 'moment';
 import PropTypes from 'prop-types';
 
 export default class DatePair extends Component {
@@ -23,8 +24,8 @@ export default class DatePair extends Component {
 
 DatePair.propTypes = {
   index: PropTypes.number,
-  beginDate: PropTypes.instanceOf(Date),
-  endDate: PropTypes.instanceOf(Date),
+  beginDate: PropTypes.instanceOf(Moment),
+  endDate: PropTypes.instanceOf(Moment),
   onBeginDateChange: PropTypes.func,
   onEndDateChange: PropTypes.func,
 };
