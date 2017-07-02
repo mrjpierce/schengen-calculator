@@ -80,7 +80,7 @@ describe('VisaLogic', () => {
 
     });
 
-    describe('daysInDatePairBeforeOrOnDate', () => {
+    describe('daysInDatePairAfterOrOnDate', () => {
         
         it('should return 1 when the DatePair end date is the date', () => {
             // ARRANGE
@@ -89,7 +89,7 @@ describe('VisaLogic', () => {
 
             // ACT
             let result = VisaLogic
-                .daysInDatePairBeforeOrOnDate(datePair, date);
+                .daysInDatePairAfterOrOnDate(datePair, date);
 
             // ASSERT
             expect(result).toBe(1);
@@ -102,7 +102,7 @@ describe('VisaLogic', () => {
 
             // ACT
             let result = VisaLogic
-                .daysInDatePairBeforeOrOnDate(datePair, date);
+                .daysInDatePairAfterOrOnDate(datePair, date);
 
             // ASSERT
             expect(result).toBe(6);
@@ -115,7 +115,7 @@ describe('VisaLogic', () => {
 
             // ACT
             let result = VisaLogic
-                .daysInDatePairBeforeOrOnDate(datePair, date);
+                .daysInDatePairAfterOrOnDate(datePair, date);
 
             // ASSERT
             expect(result).toBe(11);
@@ -163,7 +163,7 @@ describe('VisaLogic', () => {
 
     describe('daysinDatePairsInVisaPeriod', () => {
 
-        it(`should return a correct count excluding all days a date pair not 
+        it(`should return a correct count excluding all days of a date pair not 
             in visa period and all DatePairs are before today`, () => {
             // ARRANGE
             let datePairs = [
@@ -171,7 +171,6 @@ describe('VisaLogic', () => {
                 createDatePairWithOffset(-21, -10),
                 createDatePairWithOffset(-11, -1)
             ];
-            console.log(datePairs);
 
             // ACT
             let result = VisaLogic
@@ -179,6 +178,40 @@ describe('VisaLogic', () => {
 
             // ASSERT
             expect(result).toEqual(23);
+        });
+
+        it(`should return a correct count excluding some days of a date pair not 
+            in visa period and all DatePairs are before today`, () => {
+            // ARRANGE
+            let datePairs = [
+                createDatePairWithOffset(-40, -25),
+                createDatePairWithOffset(-21, -10),
+                createDatePairWithOffset(-11, -1)
+            ];
+
+            // ACT
+            let result = VisaLogic
+                .daysinDatePairsInVisaPeriod(datePairs, 30);
+
+            // ASSERT
+            expect(result).toEqual(29);
+        });
+
+        it(`should return a correct of all DatePairs including a one day
+            DatePair directly on the visa period start date`, () => {
+            // ARRANGE
+            let datePairs = [
+                createDatePairWithOffset(-30, -30),
+                createDatePairWithOffset(-21, -10),
+                createDatePairWithOffset(-11, -1)
+            ];
+
+            // ACT
+            let result = VisaLogic
+                .daysinDatePairsInVisaPeriod(datePairs, 30);
+
+            // ASSERT
+            expect(result).toEqual(24);
         });
 
     });

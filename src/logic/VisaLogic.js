@@ -3,26 +3,15 @@ import DatePair from '../models/DatePair';
 
 export default class VisaLogic {
 
-    static test() {
-        let startDate = Moment('2017-06-20');
-        let periodStartDate = Moment('2017-06-10');
-        let periodEndDate = Moment('2017-06-20');
-
-        console.log(Moment('2017-06-20').diff(Moment('2017-06-20'), 'days'));
-        console.log(Moment('2017-06-30').diff(Moment('2017-06-20'), 'days'));
-
-        if(Moment('2017-06-20').isSame(Moment('2017-06-20'))) 
-            console.log(Moment('2017-06-20').add(1, 'days'));
-    }
-
     static daysinDatePairsInVisaPeriod(datePairs, daysInVisaPeriod) {
         let visaPeriodEndDate = this.findVisaPeriodEndDate(datePairs);
-        let visaPeriodStartDate = visaPeriodEndDate.subtract(daysInVisaPeriod, 'days');
-        let daysInDatePairsInVisaPeriod = 0;
+        let visaPeriodStartDate = visaPeriodEndDate.clone();
+        visaPeriodStartDate.subtract(daysInVisaPeriod, 'days');
 
+        let daysInDatePairsInVisaPeriod = 0;
         datePairs.forEach((datePair) => {
             daysInDatePairsInVisaPeriod += this.
-                daysInDatePairBeforeOrOnDate(datePair, visaPeriodStartDate);
+                daysInDatePairAfterOrOnDate(datePair, visaPeriodStartDate);
         });
 
         return daysInDatePairsInVisaPeriod;
@@ -39,19 +28,24 @@ export default class VisaLogic {
         return visaPeriodEndDate;
     }
 
-    static daysInDatePairBeforeOrOnDate(datePair, date) {
+    static daysInDatePairAfterOrOnDate(datePair, date) {
         let periodStartDate = datePair.startDate;
         let periodEndDate = datePair.endDate;
+
+        // The DatePair end date is before the date we can safely assume 0 days
+        if(periodEndDate.isBefore(date))
+            return 0;
 
         let daysInPeriod = this
             .daysBetweenDatesInclusive(periodStartDate, periodEndDate);
 
+        // If the DatePair start date is before the date we need to subtract some days
         let daysBeforeDate = 0;
         if(periodStartDate.isBefore(date)) {
             daysBeforeDate = this
                 .daysBetweenDatesExclusive(periodStartDate, date);
         }
-        
+
         return daysInPeriod - daysBeforeDate;
     }
 
