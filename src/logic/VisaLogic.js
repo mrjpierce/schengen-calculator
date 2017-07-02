@@ -3,22 +3,30 @@ import DatePair from '../models/DatePair';
 
 export default class VisaLogic {
 
-    static daysinDatePairsInVisaPeriod(datePairs, daysInVisaPeriod) {
-        let visaPeriodEndDate = this.findVisaPeriodEndDate(datePairs);
-        let visaPeriodStartDate = visaPeriodEndDate.clone();
-        visaPeriodStartDate.subtract(daysInVisaPeriod, 'days');
+    static daysInDatePairsInVisaPeriod(passportDatePairs, visaPeriodDatePair) {
+        if(!passportDatePairs || passportDatePairs.length === 0)
+            throw new Error('passportDatePairs array can not be null, undefined, or empty');
+
+        if(!visaPeriodDatePair)
+            throw new Error('visaPeriodDatePair array can not be null, undefined, or empty');
+
+        let visaPeriodEndDate = visaPeriodDatePair.endDate;
+        let visaPeriodStartDate = visaPeriodDatePair.startDate;
 
         let daysInDatePairsInVisaPeriod = 0;
-        datePairs.forEach((datePair) => {
+        passportDatePairs.forEach((passportDatePair) => {
             daysInDatePairsInVisaPeriod += this.
-                daysInDatePairAfterOrOnDate(datePair, visaPeriodStartDate);
+                daysInDatePairAfterOrOnDate(passportDatePair, visaPeriodStartDate);
         });
 
         return daysInDatePairsInVisaPeriod;
     }
 
-    static findVisaPeriodEndDate(datePairs) {
-        let visaPeriodEndDate = Moment().startOf('day'); // Default to today
+    static findLatestEndDate(datePairs) {
+        if(!datePairs || datePairs.length === 0)
+            throw new Error('datePairs array can not be null, undefined, or empty');
+
+        let visaPeriodEndDate;
 
         datePairs.map((d) => {
             if(d.endDate.isAfter(visaPeriodEndDate)) {
