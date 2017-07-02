@@ -80,7 +80,7 @@ describe('VisaLogic', () => {
 
     });
 
-    describe('daysInDatePairBeforeOrOnDate', () => {
+    describe('daysInDatePairAfterOrOnDate', () => {
         
         it('should return 1 when the DatePair end date is the date', () => {
             // ARRANGE
@@ -89,7 +89,7 @@ describe('VisaLogic', () => {
 
             // ACT
             let result = VisaLogic
-                .daysInDatePairBeforeOrOnDate(datePair, date);
+                .daysInDatePairAfterOrOnDate(datePair, date);
 
             // ASSERT
             expect(result).toBe(1);
@@ -102,7 +102,7 @@ describe('VisaLogic', () => {
 
             // ACT
             let result = VisaLogic
-                .daysInDatePairBeforeOrOnDate(datePair, date);
+                .daysInDatePairAfterOrOnDate(datePair, date);
 
             // ASSERT
             expect(result).toBe(6);
@@ -115,70 +115,116 @@ describe('VisaLogic', () => {
 
             // ACT
             let result = VisaLogic
-                .daysInDatePairBeforeOrOnDate(datePair, date);
+                .daysInDatePairAfterOrOnDate(datePair, date);
 
             // ASSERT
             expect(result).toBe(11);
         });
     });
 
-    describe('findVisaPeriodEndDate', () => {
+    describe('findLatestEndDate', () => {
 
         it('should return the oldest date pair end date when today is less than that end date', () => {
             // ARRANGE
             let expectedDatePair = createDatePairWithOffset(-11, 10);
             let datePairs = [
                 createDatePairWithOffset(-30, -20),
+                expectedDatePair,
                 createDatePairWithOffset(-21, -10),
-                expectedDatePair
             ];
 
             // ACT
             let result = VisaLogic
-                .findVisaPeriodEndDate(datePairs);
+                .findLatestEndDate(datePairs);
 
             // ASSERT
             expect(result).toBe(expectedDatePair.endDate);
         });
 
-        it('should return today when all date pair end dates are younger', () => {
-            // ARRANGE
-            let today = Moment();
-            today.startOf('day');
-            let datePairs = [
-                createDatePairWithOffset(-30, -20),
-                createDatePairWithOffset(-21, -10),
-                createDatePairWithOffset(-11, -1)
-            ];
-
-            // ACT
-            let result = VisaLogic
-                .findVisaPeriodEndDate(datePairs);
-
+        it('should throw error when null, undefined, or empty', () => {
             // ASSERT
-            expect(result).toEqual(today);
+            expect(() => VisaLogic.findLatestEndDate(null)).toThrow();
+            expect(() => VisaLogic.findLatestEndDate(undefined)).toThrow();
+            expect(() => VisaLogic.findLatestEndDate([])).toThrow();
         });
 
     });
 
-    describe('daysinDatePairsInVisaPeriod', () => {
+    describe('daysInDatePairsInVisaPeriod', () => {
 
-        it(`should return a correct count excluding all days a date pair not 
+        it(`should return a correct count excluding all days of a date pair not 
             in visa period and all DatePairs are before today`, () => {
             // ARRANGE
-            let datePairs = [
+            let passportDatePairs = [
                 createDatePairWithOffset(-50, -40),
                 createDatePairWithOffset(-21, -10),
                 createDatePairWithOffset(-11, -1)
             ];
-            console.log(datePairs);
+            // 30 day visa period ending on today
+            let visaPeriodDatePair = createDatePairWithOffset(-30, 0);
 
             // ACT
             let result = VisaLogic
-                .daysinDatePairsInVisaPeriod(datePairs, 30);
+                .daysInDatePairsInVisaPeriod(passportDatePairs, visaPeriodDatePair);
 
             // ASSERT
             expect(result).toEqual(23);
+        });
+
+        it(`should return a correct count excluding some days of a date pair not 
+            in visa period and all DatePairs are before today`, () => {
+            // ARRANGE
+            let passportDatePairs = [
+                createDatePairWithOffset(-40, -25),
+                createDatePairWithOffset(-21, -10),
+                createDatePairWithOffset(-11, -1)
+            ];
+            // 30 day visa period ending on today
+            let visaPeriodDatePair = createDatePairWithOffset(-30, 0);
+
+            // ACT
+            let result = VisaLogic
+                .daysInDatePairsInVisaPeriod(passportDatePairs, visaPeriodDatePair);
+
+            // ASSERT
+            expect(result).toEqual(29);
+        });
+
+        it(`should return a correct of all DatePairs including a one day
+            DatePair directly on the visa period start date`, () => {
+            // ARRANGE
+            let passportDatePairs = [
+                createDatePairWithOffset(-30, -30),
+                createDatePairWithOffset(-21, -10),
+                createDatePairWithOffset(-11, -1)
+            ];
+            // 30 day visa period ending on today
+            let visaPeriodDatePair = createDatePairWithOffset(-30, 0);
+
+            // ACT
+            let result = VisaLogic
+                .daysInDatePairsInVisaPeriod(passportDatePairs, visaPeriodDatePair);
+
+            // ASSERT
+            expect(result).toEqual(24);
+        });
+
+        it('should throw error when null, undefined, or empty', () => {
+            // ARRANGE
+             let passportDatePairs = [
+                createDatePairWithOffset(-30, -30),
+                createDatePairWithOffset(-21, -10),
+                createDatePairWithOffset(-11, -1)
+            ];
+            let visaPeriodDatePair = createDatePairWithOffset(-30, 0);
+
+            // ASSERT
+            expect(() => VisaLogic.daysInDatePairsInVisaPeriod(null, visaPeriodDatePair)).toThrow();
+            expect(() => VisaLogic.daysInDatePairsInVisaPeriod(undefined, visaPeriodDatePair)).toThrow();
+            expect(() => VisaLogic.daysInDatePairsInVisaPeriod([], visaPeriodDatePair)).toThrow();
+
+            expect(() => VisaLogic.daysInDatePairsInVisaPeriod(passportDatePairs, null)).toThrow();
+            expect(() => VisaLogic.daysInDatePairsInVisaPeriod(passportDatePairs, undefined)).toThrow();
         });
 
     });
