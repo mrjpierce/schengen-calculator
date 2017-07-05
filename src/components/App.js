@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import Moment from 'moment';
 import EuropeanUnionCircle from '../content/european-union-circle.svg';
-import DatePair from './DatePair';
+import {default as DatePairComponent} from './DatePair';
+import DatePair from '../models/DatePair';
 import VisaLogic from '../logic/VisaLogic';
 import './App.css';
 
@@ -20,7 +21,7 @@ class App extends Component {
             visaOffsetStartDate,
             visaDaysUsed: 0,
             visaDaysLeft: maxDaysInOffset,
-            datePairs: [{ beginDate: undefined, endDate: undefined}]
+            datePairs: [{ startDate: undefined, endDate: undefined}]
         };
         this.onAddBtnClick = this.onAddBtnClick.bind(this);
     }
@@ -28,32 +29,38 @@ class App extends Component {
     onAddBtnClick(event) {
         const datePairs = this.state.datePairs;
         this.setState({
-            datePairs: datePairs.concat({ beginDate: undefined, endDate: undefined})
+            datePairs: datePairs.concat({ startDate: undefined, endDate: undefined})
         });
     }
 
     onBeginDateChange = (event, index) => {
         event.preventDefault();
         const datePairs = this.state.datePairs;
-        let beginDate = Moment(event.target.value);
-        datePairs[index].beginDate = beginDate;
-        this.setState({ datePairs });
-        this.updateAvailableVisaDays();
+        datePairs[index].startDate = Moment(event.target.value);
+        this.setState((prevState, props) => { datePairs }, this.updateVisaDays);
     }
 
     onEndDateChange = (event, index) => {
         event.preventDefault();
         const datePairs = this.state.datePairs;
-        let endDate = Moment(event.target.value);
-        datePairs[index].endDate = endDate;
-        this.setState({ datePairs });
-        this.updateAvailableVisaDays();
+        datePairs[index].endDate = Moment(event.target.value);
+        this.setState((prevState, props) => { datePairs }, this.updateVisaDays);
+    }
+
+    updateVisaDays() {
+        const datePairs = this.state.datePairs;
+        let visaEndDate = VisaLogic.findLatestEndDate(datePairs);
+        let visaStartDate = visaEndDate.clone();
+        const visaPeriod = new DatePair(visaStartDate, visaEndDate);
+        this.setState({
+            visaDaysUsed: VisaLogic.daysInDatePairsInVisaPeriod(datePairs, visaPeriod)
+        });
     }
 
     render() {
         var datePairs = this.state.datePairs.map((d, i) => {
             return(
-                <DatePair 
+                <DatePairComponent 
                     key={i}
                     index={i}
                     beginDate={d.beginDate} 
